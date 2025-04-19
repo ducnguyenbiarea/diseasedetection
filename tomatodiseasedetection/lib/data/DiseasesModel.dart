@@ -33,7 +33,7 @@ class DiseaseData {
       print("📤 !! Preparing to send image to backend...");
 
       var uri = Uri.parse(
-        "https://https://diseasedetection-rumj.onrender.com/predict",
+        "https://diseasedetection-rumj.onrender.com/predict",
       );
       var request = http.MultipartRequest('POST', uri);
 
