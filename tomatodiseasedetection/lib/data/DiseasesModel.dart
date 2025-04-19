@@ -33,7 +33,7 @@ class DiseaseData {
       print("📤 !! Preparing to send image to backend...");
 
       var uri = Uri.parse(
-        "https://backend-model-tomatodiseasedetection.onrender.com/predict",
+        "https://https://diseasedetection-rumj.onrender.com/predict",
       );
       var request = http.MultipartRequest('POST', uri);
 
