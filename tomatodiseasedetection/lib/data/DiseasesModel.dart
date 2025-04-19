@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
 import 'package:path/path.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class DiseaseData {
   static final DiseaseData _instance = DiseaseData._internal();
@@ -32,12 +33,24 @@ class DiseaseData {
     try {
       print("📤 !! Preparing to send image to backend...");
 
-      var uri = Uri.parse(
-        "https://diseasedetection-rumj.onrender.com/predict",
-      );
+      var uri = Uri.parse("https://diseasedetection-rumj.onrender.com/predict");
       var request = http.MultipartRequest('POST', uri);
 
-      final mimeTypeData = lookupMimeType(_selectedImage.path)?.split('/');
+      // final mimeTypeData = lookupMimeType(_selectedImage.path)?.split('/');
+      // if (mimeTypeData == null || mimeTypeData.length != 2) {
+      //   throw Exception("⚠️ !! Could not determine MIME type.");
+      // }
+
+      List<String>? mimeTypeData = lookupMimeType(
+        _selectedImage.path,
+      )?.split('/');
+
+      // ✅ Fallback for web if mimeType can't be determined
+      if ((mimeTypeData == null || mimeTypeData.length != 2) && kIsWeb) {
+        print("🌐 Web fallback: assigning default image/jpeg MIME type");
+        mimeTypeData = ['image', 'jpeg'];
+      }
+
       if (mimeTypeData == null || mimeTypeData.length != 2) {
         throw Exception("⚠️ !! Could not determine MIME type.");
       }
@@ -45,14 +58,35 @@ class DiseaseData {
       print("📂 !! MIME Type Detected: ${mimeTypeData[0]}/${mimeTypeData[1]}");
       print("🖼️ !! Image Path: ${_selectedImage.path}");
 
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          'image',
-          _selectedImage.path,
-          contentType: MediaType(mimeTypeData[0], mimeTypeData[1]),
-          filename: basename(_selectedImage.path),
-        ),
-      );
+      // request.files.add(
+      //   await http.MultipartFile.fromPath(
+      //     'image',
+      //     _selectedImage.path,
+      //     contentType: MediaType(mimeTypeData[0], mimeTypeData[1]),
+      //     filename: basename(_selectedImage.path),
+      //   ),
+      // );
+      if (kIsWeb) {
+        // On web, we must read bytes instead of using fromPath
+        final bytes = await _selectedImage.readAsBytes();
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'image',
+            bytes,
+            contentType: MediaType(mimeTypeData[0], mimeTypeData[1]),
+            filename: basename(_selectedImage.path),
+          ),
+        );
+      } else {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'image',
+            _selectedImage.path,
+            contentType: MediaType(mimeTypeData[0], mimeTypeData[1]),
+            filename: basename(_selectedImage.path),
+          ),
+        );
+      }
 
       print("📤 !! Sending request to backend...");
       var streamedResponse = await request.send();
