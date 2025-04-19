@@ -1,5 +1,7 @@
 # Tomato Disease Detection Using Hybrid Deep Learning Model
 
+# Deployed url : https://diseasedetection.vercel.app/
+
 ![Tomato Disease Detection](https://link-to-your-image.png)
 
 ## Overview
