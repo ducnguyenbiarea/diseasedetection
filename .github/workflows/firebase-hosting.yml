@@ -1,25 +1,33 @@
-name: Deploy to Firebase Hosting
+name: Deploy Flutter Web to Firebase Hosting
 
 on:
   push:
     branches:
-      - main  # thay bằng 'master' nếu bạn dùng nhánh đó
+      - main
 
 jobs:
-  deploy:
+  build_and_deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      # Nếu bạn có bước build (ví dụ Flutter Web hoặc React), thêm phần này
-      # - run: npm install
-      # - run: npm run build
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.3'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Flutter web
+        run: flutter build web
 
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
-          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_DISEASEDETECTION }}"
           channelId: live
           projectId: diseasedetection-59580
